@@ -1,0 +1,32 @@
+name: verifier
+on:
+  schedule:
+    - cron: '37 * * * *'
+  workflow_dispatch:
+concurrency:
+  group: verifier
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  round:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VERIFIER_ACCOUNT_ID: anas-verifier.testnet
+      VERIFIER_PRIVATE_KEY: ${{ secrets.VERIFIER_PRIVATE_KEY }}
+      VERIFIER_MODELS: z-ai/glm-5.3-flash
+      AINEK_CONTRACT: ainek-log-dastan.testnet
+      NEAR_NETWORK: testnet
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: sadabaevb/ainek
+          ref: 39c2f192863b4872899c02e81c823af74efeb628
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -F verifier once
